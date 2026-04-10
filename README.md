@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# White Gloves Sales CRM
 
-## Getting Started
+A robust, mobile-first Sales CRM built to handle commission-based agents. It is designed dynamically to route users into separate operational silos: an Admin Command Center (for analytics, bulk lead management, and agent oversight) and an Agent Pipeline (for highly responsive, on-the-go follow-ups).
 
-First, run the development server:
+## 🚀 Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend:** Next.js (App Router), React, Tailwind CSS, Built-in Shadcn-like Radix Primitives
+- **Backend:** Next.js API Routes (Serverless)
+- **Database:** MongoDB via Mongoose
+- **Authentication:** Custom JWT stateless authentication (with HTTP-only cookies)
+- **Icons & UI:** Lucide React, Class-Variance Authority, Tailwind-Merge
+
+---
+
+## 📂 Project Structure
+
+```text
+agent-crm/
+│
+├── app/                  # Next.js App Router Core
+│   ├── (admin)/          # Group route for Admin portal
+│   │   ├── admin/        # Admin Dashboard Page
+│   │   ├── admin/agents/ # Agent Create & Manage Page
+│   │   ├── admin/leads/  # Lead Table & Edit Page
+│   │   └── admin/upload/ # Excel Data Upload & Mapping Engine
+│   │
+│   ├── (agent)/          # Group route for Field Agents
+│   │   ├── agent/        # Agent Dashboard View
+│   │   └── agent/leads/  # One-tap interactive leads pipeline
+│   │
+│   ├── (auth)/login/     # Universal JWT Login Portal
+│   ├── api/              # Restful APIs Backend
+│   └── layout.tsx        # Global Layout config & Error boundaries
+│
+├── components/           
+│   ├── shared/           # Sticky navbars, AuthProvider context wrapper
+│   └── ui/               # Radix-UI accessible components (Cards, Tables, Modals)
+│
+├── lib/                  # Utilities (db.ts connector, Auth jwt helpers)
+└── models/               # MongoDB Database Schemas
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔐 Authentication Flow
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The app utilizes a fully customized JWT architecture rather than heavy libraries. 
+**How it works:**
+1. A user logs in through `POST /api/auth/login`.
+2. The server compares the password using `bcryptjs`.
+3. An access token is encoded with their `userId`, `role`, and `name`.
+4. It's stored in a secure `httpOnly` cookie (`crm_token`).
+5. A client-side wrapper `AuthProvider.tsx` fetches the signed-in user and determines global redirects (Admin -> `/admin`, Agent -> `/agent`).
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 📊 Database Models
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**1. User (`models/User.ts`)**
+Holds credential information. Agents are dynamically evaluated based on role (`admin` or `agent`). Tracks `isActive` statuses to easily disable an employee without deletion.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**2. Lead (`models/Lead.ts`)**
+Holds prospective client details.
+- Tracks static values: `name`, `phone`, `city`, `source`
+- Has fixed pipeline statuses: `New Lead | Contacted | DNP | Interested | Follow-up | Converted | Not Interested`.
+- Maintains the `assignedAgentId` (Foreign Key referencing the User) and the expected `commissionAmount`.
 
-## Deploy on Vercel
+**3. Activity (`models/Activity.ts`)**
+The operational audit log.
+- Maps multiple Activities to a single Lead (`leadId`).
+- Maps who made the activity (`agentId`).
+- Supports types string: `Call`, `WhatsApp`, `Note`.
+- Safely handles `nextFollowUpDate` timestamps.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🛠 Features & Capabilities
+
+### **The Admin Persona**
+The Administrator has full omniscient control over the CRM data.
+
+- **KPI Dashboard (`/admin`)**: Shows raw revenue indicators. Groups leads by MongoDB Aggregation to determine overall conversion metrics. It parses "Killer vs Time-waster" matrices automatically (Killers have >10% win rate).
+- **Excel Smart Mapping Upload (`/admin/upload`)**: A robust parser using front-end `xlsx`. It reads `.csv` or `.xlsx` files into JSON, allows the admin to visually map Excel column names to Database constraints, and safely transmits only mapped data via POST to populate the database bulk.
+- **Lead Controller (`/admin/leads`)**: An expansive table to modify individual leads, associate specific agents, and designate the flat commission bounty on a given lead.
+- **Agent Governance (`/admin/agents`)**: Creates secure credentials for mobile personnel.
+
+### **The Agent Persona**
+The Agent interface is strictly optimized for thumb-reachability and cellular performance constraints.
+
+- **Dashboard (`/agent`)**: Quick financial overview of converted leads, expected bounty, and a to-do list mapping specifically to "Follow-up" appointments scheduled for today's Date.
+- **Lead Pipeline (`/agent/leads`)**: The primary workspace. Focuses on minimal-click environments. 
+   - **One-Tap Dialing:** Immediately launches `tel:` protocols internally.
+   - **One-Tap WhatsApp:** Instantly launches `wa.me/` routing.
+   - **Action Dialogs:** A fast pop-up that dynamically alters Lead Status, adds plaintext auditing nodes, and sets futuristic Follow-up alarms, all committed seamlessly to MongoDB with a single "Save" stroke.
