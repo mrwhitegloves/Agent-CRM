@@ -4,8 +4,12 @@ import { NotificationProvider } from "@/components/shared/NotificationProvider";
 import { Toaster } from "react-hot-toast";
 
 export const metadata = {
-  title: "Sales CRM",
-  description: "Mobile-first Sales CRM for agents",
+  title: "White Gloves CRM",
+  description: "Elite Mobile-first Sales CRM",
+  icons: {
+    icon: "/white-gloves-logo.png",
+    apple: "/white-gloves-logo.png",
+  }
 };
 
 export default function RootLayout({

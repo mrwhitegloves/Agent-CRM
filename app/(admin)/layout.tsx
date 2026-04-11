@@ -1,7 +1,15 @@
-import { AuthProvider } from "@/components/shared/AuthProvider";
 import { AdminNav } from "@/components/shared/AdminNav";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("crm_token");
+
+  if (!token) {
+    redirect("/login");
+  }
+
   return (
     <div className="flex flex-col md:flex-row h-full h-[100dvh] w-full bg-gray-50">
       <AdminNav />

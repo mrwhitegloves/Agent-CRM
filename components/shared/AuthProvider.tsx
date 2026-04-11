@@ -49,6 +49,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkAuth();
   }, []);
 
+  // Client-side protection for routes
+  useEffect(() => {
+    if (!loading) {
+      const isProtectedRoute = pathname.startsWith("/admin") || pathname.startsWith("/agent");
+      if (isProtectedRoute && !user) {
+        router.push("/login");
+      }
+      // Redirect from login if already authenticated
+      if (pathname === "/login" && user) {
+        router.push(user.role === "admin" ? "/admin" : "/agent");
+      }
+    }
+  }, [user, loading, pathname, router]);
+
   const login = (userData: User) => {
     setUser(userData);
     router.push(userData.role === "admin" ? "/admin" : "/agent");

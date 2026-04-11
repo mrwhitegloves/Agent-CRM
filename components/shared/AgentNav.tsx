@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Users, Briefcase, LogOut } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useAuth } from "./AuthProvider";
 
@@ -16,7 +17,7 @@ export function AgentNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-bottom pb-env(safe-area-inset-bottom)">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-gray-800 safe-area-bottom pb-env(safe-area-inset-bottom) shadow-[0_-4px_20px_rgba(0,0,0,0.4)]">
       <div className="flex items-center justify-around h-16 px-4">
         {links.map((link) => {
           const Icon = link.icon;
@@ -26,21 +27,28 @@ export function AgentNav() {
               key={link.href}
               href={link.href}
               className={cn(
-                "flex flex-col items-center justify-center w-full h-full space-y-1 text-xs transition-colors",
-                isActive ? "text-blue-600 font-medium" : "text-gray-500 hover:text-gray-900"
+                "flex flex-col items-center justify-center w-full h-full space-y-1 text-[10px] transition-all",
+                isActive ? "text-accent font-bold" : "text-gray-500 hover:text-white"
               )}
             >
-              <Icon className={cn("w-5 h-5", isActive ? "text-blue-600" : "text-gray-500")} />
-              <span>{link.label}</span>
+              <div className={cn(
+                "p-1 rounded-lg transition-all",
+                isActive ? "bg-accent/10" : "bg-transparent"
+              )}>
+                <Icon className={cn("w-5 h-5", isActive ? "text-accent" : "text-gray-500")} />
+              </div>
+              <span className="uppercase tracking-wider">{link.label}</span>
             </Link>
           );
         })}
         <button
           onClick={logout}
-          className="flex flex-col items-center justify-center w-full h-full space-y-1 text-xs text-gray-500 hover:text-red-600 transition-colors"
+          className="flex flex-col items-center justify-center w-full h-full space-y-1 text-[10px] text-gray-500 hover:text-primary transition-colors"
         >
-          <LogOut className="w-5 h-5" />
-          <span>Logout</span>
+          <div className="p-1">
+            <LogOut className="w-5 h-5" />
+          </div>
+          <span className="uppercase tracking-wider">Logout</span>
         </button>
       </div>
     </nav>

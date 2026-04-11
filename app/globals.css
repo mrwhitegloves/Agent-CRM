@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
+@font-import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000000;
+  
+  /* Premium Palette */
+  --primary: #C00000; /* Rich Red */
+  --secondary: #000000; /* Deep Black */
+  --accent: #D4AF37; /* Metallic Gold */
+  --sand: #F5E6CA; /* Golden Sand */
+  --sand-light: #FDFBF7;
+  --muted: #64748b;
+  --border: #e2e8f0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-sand: var(--sand);
+  --color-sand-light: var(--sand-light);
+  
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Premium Classes */
+.gold-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #F5E6CA 50%, #D4AF37 100%);
+}
+
+.dark-gradient {
+  background: linear-gradient(180deg, #1A1A1A 0%, #000000 100%);
+}
+
+.red-soft-gradient {
+  background: linear-gradient(135deg, #C00000 0%, #900000 100%);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(225, 198, 153, 0.3);
 }

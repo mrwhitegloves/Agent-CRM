@@ -35,110 +35,123 @@ export default function AgentDashboard() {
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-gray-500">Overview of your leads and activities.</p>
+    <div className="p-5 md:p-8 space-y-8 pb-24 min-h-screen bg-sand-light/30">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-serif font-bold text-secondary">Mission Pulse</h1>
+        <p className="text-xs text-muted font-bold uppercase tracking-widest">Identity Trace: agent-{data?.agentId?.substring(0,4) || 'user'}</p>
+        <div className="h-1 w-12 bg-primary mt-2 shadow-[0_0_8px_rgba(192,0,0,0.4)]" />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:gap-6">
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Leads</CardTitle>
+      <div className="grid grid-cols-2 gap-4 md:gap-8">
+        <Card className="border-accent/10 shadow-lg bg-sand-light relative overflow-hidden group">
+           <div className="absolute top-0 right-0 w-12 h-12 bg-accent/5 rounded-bl-full -mr-3 -mt-3" />
+          <CardHeader className="p-5 pb-1">
+            <CardTitle className="text-[10px] uppercase font-bold tracking-[0.1em] text-muted flex items-center gap-2">
+              <Users className="w-3 h-3 text-accent" /> Assigned Assets
+            </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-bold">{data?.myLeads || 0}</div>
-            <Users className="h-4 w-4 text-blue-500 absolute top-4 right-4" />
+          <CardContent className="p-5 pt-0">
+            <div className="text-3xl font-serif font-bold text-secondary">{data?.myLeads || 0}</div>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Converted</CardTitle>
+        <Card className="border-primary/10 shadow-lg bg-white relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-12 h-12 bg-primary/5 rounded-bl-full -mr-3 -mt-3" />
+          <CardHeader className="p-5 pb-1">
+            <CardTitle className="text-[10px] uppercase font-bold tracking-[0.1em] text-muted flex items-center gap-2">
+               <ActivitySquare className="w-3 h-3 text-primary" /> Closures
+            </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-bold text-green-600">{data?.myConverted || 0}</div>
-            <ActivitySquare className="h-4 w-4 text-green-500 absolute top-4 right-4" />
+          <CardContent className="p-5 pt-0">
+            <div className="text-3xl font-serif font-bold text-primary">{data?.myConverted || 0}</div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
-        <Card>
-          <CardHeader className="p-4 pb-2 border-b">
-            <CardTitle className="text-base font-semibold">Targets & Deadlines</CardTitle>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="border-accent/10 shadow-md rounded-2xl bg-white">
+          <CardHeader className="p-5 pb-3 border-b bg-sand-light/50">
+            <CardTitle className="text-xs uppercase tracking-[.15em] font-serif font-bold flex items-center text-secondary">
+               Upcoming Target Points
+            </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 flex flex-col gap-3">
+          <CardContent className="p-5 flex flex-col gap-4">
              {data?.timelineGroups?.length > 0 ? (
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 data.timelineGroups.map((group: any) => (
-                  <div key={group._id} className="flex justify-between items-center text-sm border-b pb-2 last:border-0 last:pb-0">
-                    <span className="font-medium text-gray-700">{group.count} Leads</span>
-                    <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
-                      Target: {group._id} Days
+                  <div key={group._id} className="flex justify-between items-center text-sm border-b border-sand pb-3 last:border-0 last:pb-0 transition-all hover:translate-x-1">
+                    <span className="font-bold text-secondary">{group.count} Leads Pending</span>
+                    <Badge variant="outline" className="bg-sand text-accent border-accent/20 font-bold text-[9px] px-2">
+                      {group._id}D DEADLINE
                     </Badge>
                   </div>
                 ))
              ) : (
-                <div className="text-sm text-gray-500 text-center py-2">No active timeline targets.</div>
+                <div className="text-sm text-muted italic text-center py-4">No active timeline targets.</div>
              )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="p-4 pb-2 border-b">
-            <CardTitle className="text-base font-semibold">Lead Stage Overview</CardTitle>
+        <Card className="border-accent/10 shadow-md rounded-2xl overflow-hidden bg-white">
+          <CardHeader className="p-5 pb-3 border-b bg-sand-light/50">
+            <CardTitle className="text-xs uppercase tracking-[.15em] font-serif font-bold flex items-center text-secondary">
+               Queue Status
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-4 grid grid-cols-2 gap-2">
              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
              {data?.statusBreakdown?.map((status: any) => (
                 <Link href={`/agent/leads?status=${status._id}`} key={status._id}>
-                  <div className="flex justify-between items-center p-2 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-100 cursor-pointer">
-                    <span className="text-xs font-medium text-gray-700 truncate mr-2" title={status._id}>{status._id}</span>
-                    <Badge variant="secondary" className="text-xs">{status.count}</Badge>
+                  <div className="flex justify-between items-center p-3 rounded-xl bg-white border border-sand hover:border-accent transition-all cursor-pointer shadow-sm">
+                    <span className="text-[10px] font-bold uppercase text-secondary truncate mr-2" title={status._id}>{status._id}</span>
+                    <Badge variant="secondary" className="text-[10px] bg-sand-light text-accent font-bold px-2">{status.count}</Badge>
                   </div>
                 </Link>
              ))}
-             {(!data?.statusBreakdown || data.statusBreakdown.length === 0) && (
-                <div className="col-span-2 text-sm text-gray-500 text-center py-2">No leads available.</div>
-             )}
           </CardContent>
         </Card>
-        
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 pt-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Today's Follow-ups</h2>
-          <Button variant="link" size="sm" asChild className="px-0">
-            <Link href="/agent/leads?status=Follow-up">View all</Link>
+          <h2 className="text-xl font-serif font-bold text-secondary">Follow-ups Today</h2>
+          <Button variant="link" size="sm" asChild className="p-0 h-auto text-primary text-[10px] font-bold uppercase tracking-widest">
+            <Link href="/agent/leads?status=Follow-up">Analyze Full List</Link>
           </Button>
         </div>
+        
         {data?.followUps?.length === 0 ? (
-          <div className="text-center p-6 border rounded-lg bg-white border-dashed text-gray-500">
-            <Phone className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No follow-ups for today</p>
+          <div className="text-center p-12 border-2 border-dashed rounded-3xl bg-white border-accent/10 text-muted">
+            <Phone className="h-10 w-10 mx-auto mb-4 opacity-20" />
+            <p className="font-serif italic">Operational silence. No tasks scheduled for this cycle.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {data?.followUps?.map((log: any) => (
-              <Card key={log._id} className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-semibold text-sm">{log.leadId.name}</h3>
-                    <p className="text-xs text-gray-500">{log.leadId.phone}</p>
+              <Card key={log._id} className="p-5 border-accent/10 shadow-lg bg-white rounded-3xl hover:border-accent/40 transition-all">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="space-y-0.5">
+                    <h3 className="font-serif font-bold text-secondary">{log.leadId.name}</h3>
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-wider">{log.leadId.phone}</p>
                   </div>
-                  <Badge variant="outline">{formatDateTime(log.nextFollowUpDate)}</Badge>
+                  <Badge variant="outline" className="bg-primary text-white border-none font-bold text-[9px] px-2 py-1 flex flex-col items-center">
+                    <span className="font-black italic">ALERT</span>
+                    {formatDateTime(log.nextFollowUpDate).split(',')[1]}
+                  </Badge>
                 </div>
                 {log.comment && (
-                  <p className="text-xs bg-gray-50 p-2 rounded line-clamp-2 mt-2 border border-gray-100">{log.comment}</p>
+                  <p className="text-[11px] bg-sand-light/50 text-secondary p-4 rounded-2xl italic border border-accent/5 mb-4 leading-relaxed line-clamp-2">
+                    "{log.comment}"
+                  </p>
                 )}
-                <div className="mt-3 flex gap-2">
-                  <Button size="sm" className="w-full text-xs h-8" asChild>
-                    <a href={`tel:${log.leadId.phone}`}>Call</a>
+                <div className="flex gap-3">
+                  <Button size="sm" className="bg-secondary hover:bg-black text-white font-bold h-10 rounded-xl px-4 flex-1 shadow-md" asChild>
+                    <a href={`tel:${log.leadId.phone}`} className="flex items-center justify-center gap-2">
+                       <Phone className="w-3 h-3" /> Initiate Call
+                    </a>
                   </Button>
-                  <Button size="sm" variant="outline" className="w-full text-xs h-8" asChild>
+                  <Button size="sm" variant="outline" className="border-accent/20 hover:bg-accent/10 h-10 rounded-xl px-4 text-accent font-bold" asChild>
                     <Link href={`/agent/leads`}>Update</Link>
                   </Button>
                 </div>
