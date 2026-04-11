@@ -153,12 +153,12 @@ export default function UploadLeadsPage() {
     <div className="space-y-8 max-w-6xl mx-auto pb-10">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-serif font-bold tracking-tight text-secondary">Data Acquisition</h1>
-          <p className="text-sm text-muted">Securely import lead assets via encrypted channels.</p>
+          <h1 className="text-3xl font-serif font-bold tracking-tight text-secondary">Upload Leads</h1>
+          <p className="text-sm text-muted">Import leads from your Excel or CSV file.</p>
         </div>
         <div className="flex items-center gap-3">
            <Badge variant="outline" className="bg-sand-light text-accent border-accent/20 px-3 py-1 font-bold text-[10px] uppercase tracking-wider">
-             Status: Secure Node
+             Status: Active
            </Badge>
         </div>
       </div>
@@ -169,23 +169,23 @@ export default function UploadLeadsPage() {
           <Card className={`border-accent/10 shadow-lg bg-sand-light/30 relative overflow-hidden ${excelData.length > 0 ? 'opacity-50 grayscale-[0.5]' : ''}`}>
             <CardHeader className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-bold text-accent uppercase tracking-[0.2em]">Priority Phase 01</span>
+                <span className="text-[10px] font-bold text-accent uppercase tracking-[0.2em]">Step 1</span>
                 <Button size="sm" variant="ghost" onClick={downloadTemplate} className="text-primary hover:text-white hover:bg-primary h-7 text-[10px] font-bold uppercase tracking-wider px-3 rounded-full border border-primary/20 transition-all">
                   Download Template
                 </Button>
               </div>
-              <CardTitle className="text-xl font-serif font-bold text-secondary">Source Upload</CardTitle>
-              <CardDescription className="text-xs">Select .xlsx, .xls, or .csv assets</CardDescription>
+              <CardTitle className="text-xl font-serif font-bold text-secondary">Upload File</CardTitle>
+              <CardDescription className="text-xs">Select a .xlsx, .xls, or .csv file</CardDescription>
             </CardHeader>
             <CardContent className="p-6 pt-0">
               <div className="flex flex-col items-center justify-center border-2 border-dashed border-accent/20 rounded-2xl p-8 bg-white/50 text-center shadow-inner group hover:bg-white transition-all duration-300">
                 <div className="w-16 h-16 bg-sand-light rounded-full flex items-center justify-center mb-6 shadow-sm border border-accent/10 group-hover:scale-110 transition-transform">
                   <FileUp className="w-8 h-8 text-accent" />
                 </div>
-                <p className="text-sm font-bold text-secondary mb-1">Encrypted File Drop</p>
-                <p className="text-[9px] uppercase tracking-[0.1em] text-muted font-bold mb-6 italic">Validated headers Required</p>
+                <p className="text-sm font-bold text-secondary mb-1">Select your file</p>
+                <p className="text-[9px] uppercase tracking-[0.1em] text-muted font-bold mb-6 italic">Excel or CSV supported</p>
                 <Button variant="default" className="w-full bg-secondary hover:bg-black text-white font-bold rounded-xl shadow-md transform hover:-translate-y-0.5 transition-all" onClick={() => document.getElementById('excel-upload')?.click()}>
-                  Browse Repository
+                  Browse Files
                 </Button>
                 <input 
                   id="excel-upload" 
@@ -209,9 +209,9 @@ export default function UploadLeadsPage() {
 
           <div className="p-6 glass-card rounded-2xl border border-accent/20 space-y-4">
              <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-secondary flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-accent" /> Mapping Intelligence
+                <CheckCircle2 className="w-4 h-4 text-accent" /> Auto Column Detection
              </h3>
-             <p className="text-[11px] text-muted leading-relaxed">System automatically detects field aliases like <span className="text-primary font-bold italic">Full Name</span>, <span className="text-primary font-bold italic">Mobile</span>, and more during intake.</p>
+             <p className="text-[11px] text-muted leading-relaxed">We automatically detect common column names like <span className="text-primary font-bold italic">Full Name</span>, <span className="text-primary font-bold italic">Mobile</span>, and more.</p>
           </div>
         </div>
 
@@ -222,9 +222,9 @@ export default function UploadLeadsPage() {
               <div className="absolute top-0 right-0 p-8 opacity-5">
                  <ArrowRight className="w-32 h-32 text-accent rotate-[-45deg]" />
               </div>
-              <span className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mb-2 block">Priority Phase 02</span>
-              <CardTitle className="text-2xl font-serif font-bold text-secondary">Attribute Synchronization</CardTitle>
-              <CardDescription className="text-xs">Align external keys with core database schema</CardDescription>
+              <span className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mb-2 block">Step 2</span>
+              <CardTitle className="text-2xl font-serif font-bold text-secondary">Map Columns</CardTitle>
+              <CardDescription className="text-xs">Match your file columns to the right fields</CardDescription>
             </CardHeader>
             <CardContent className="p-0 flex-1">
               {excelData.length > 0 ? (
@@ -232,9 +232,9 @@ export default function UploadLeadsPage() {
                   <Table>
                     <TableHeader className="bg-sand-light/30">
                       <TableRow className="border-b-accent/10">
-                        <TableHead className="py-5 pl-8 text-[10px] uppercase font-bold tracking-widest text-muted">CORE SCHEMA</TableHead>
+                        <TableHead className="py-5 pl-8 text-[10px] uppercase font-bold tracking-widest text-muted">OUR FIELD</TableHead>
                         <TableHead className="w-10"></TableHead>
-                        <TableHead className="py-5 pr-8 text-[10px] uppercase font-bold tracking-widest text-muted">SOURCE ATTRIBUTE</TableHead>
+                        <TableHead className="py-5 pr-8 text-[10px] uppercase font-bold tracking-widest text-muted">YOUR COLUMN</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -243,7 +243,7 @@ export default function UploadLeadsPage() {
                           <TableCell className="py-6 pl-8">
                             <div className="flex flex-col space-y-1">
                               <span className="text-sm font-bold text-secondary tracking-tight">{field.label}</span>
-                              {REQUIRED_FIELDS.includes(field.id) && <span className="text-[9px] text-primary font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1 h-1 bg-primary rounded-full" /> Immutable Field</span>}
+                              {REQUIRED_FIELDS.includes(field.id) && <span className="text-[9px] text-primary font-black uppercase tracking-widest flex items-center gap-1.5"><div className="w-1 h-1 bg-primary rounded-full" /> Required</span>}
                             </div>
                           </TableCell>
                           <TableCell><ArrowRight className="w-4 h-4 text-accent/40" /></TableCell>
@@ -257,7 +257,7 @@ export default function UploadLeadsPage() {
                                   <SelectValue placeholder="Select Data Key" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-xl border-accent/10 shadow-2xl">
-                                  <SelectItem value="unmapped" className="text-[10px] font-bold uppercase tracking-widest text-muted">-- Void Field --</SelectItem>
+                                  <SelectItem value="unmapped" className="text-[10px] font-bold uppercase tracking-widest text-muted">-- Not mapped --</SelectItem>
                                   {headers.map(h => (
                                     <SelectItem key={h} value={h} className="text-sm font-medium">{h}</SelectItem>
                                   ))}
@@ -280,8 +280,8 @@ export default function UploadLeadsPage() {
                    <div className="w-20 h-20 bg-sand-light rounded-full flex items-center justify-center mb-6 opacity-30">
                       <FileUp className="w-10 h-10 text-accent" />
                    </div>
-                   <h3 className="text-lg font-serif font-bold text-accent/40">Awating Source Transmission</h3>
-                   <p className="text-xs text-muted max-w-[280px] mt-2">Initialize synchronization by uploading a primary source file in the command center (Step 1).</p>
+                   <h3 className="text-lg font-serif font-bold text-accent/40">Upload a file first</h3>
+                   <p className="text-xs text-muted max-w-[280px] mt-2">Select a file in Step 1 to start mapping your columns.</p>
                 </div>
               )}
               {uploadedCount > 0 && (
@@ -291,8 +291,8 @@ export default function UploadLeadsPage() {
                     <CheckCircle2 className="w-6 h-6 text-accent" />
                   </div>
                   <div className="relative">
-                    <h3 className="text-lg font-serif font-bold text-accent">Transmission Success</h3>
-                    <p className="text-[11px] font-medium tracking-wide text-gray-300">SYSTEM FEED: <span className="text-white font-bold">{uploadedCount} lead assets</span> have been successfully merged into Global Repository.</p>
+                    <h3 className="text-lg font-serif font-bold text-accent">Upload Successful!</h3>
+                    <p className="text-[11px] font-medium tracking-wide text-gray-300"><span className="text-white font-bold">{uploadedCount} leads</span> have been added to the system.</p>
                   </div>
                 </div>
               )}
@@ -303,7 +303,7 @@ export default function UploadLeadsPage() {
                     <CheckCircle2 className={cn("w-5 h-5", excelData.length > 0 ? "text-accent" : "text-gray-200")} />
                  </div>
                  <p className="text-[11px] font-bold text-secondary uppercase tracking-[0.1em]">
-                   {excelData.length > 0 ? `Validated Integrity: ~${excelData.length} records detected.` : "Ready for manual synchronization."}
+                  {excelData.length > 0 ? `${excelData.length} records ready to upload.` : "Upload a file to get started."}
                  </p>
               </div>
               <div className="flex gap-4 w-full md:w-auto">
@@ -313,14 +313,14 @@ export default function UploadLeadsPage() {
                   disabled={uploading}
                   className="rounded-xl border-secondary/20 hover:bg-red-50 hover:text-red-700 font-bold px-6 h-12 flex-1 md:flex-none uppercase text-[10px] tracking-widest"
                 >
-                  Clear Command
+                   Clear
                 </Button>
                 <Button 
                   onClick={handleProcess} 
                   disabled={uploading || excelData.length === 0} 
                   className="rounded-xl bg-primary hover:bg-secondary text-white font-bold px-10 h-12 flex-1 md:flex-none uppercase text-[10px] tracking-widest shadow-xl transform active:scale-95 transition-all shadow-primary/20"
                 >
-                  {uploading ? "Analyzing Sequence..." : "Execute Import"}
+                  {uploading ? "Uploading..." : "Upload Leads"}
                 </Button>
               </div>
             </CardFooter>

@@ -37,8 +37,7 @@ export default function AgentDashboard() {
   return (
     <div className="p-5 md:p-8 space-y-8 pb-24 min-h-screen bg-sand-light/30">
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-serif font-bold text-secondary">Mission Pulse</h1>
-        <p className="text-xs text-muted font-bold uppercase tracking-widest">Identity Trace: agent-{data?.agentId?.substring(0,4) || 'user'}</p>
+        <h1 className="text-3xl font-serif font-bold text-secondary">Dashboard</h1>
         <div className="h-1 w-12 bg-primary mt-2 shadow-[0_0_8px_rgba(192,0,0,0.4)]" />
       </div>
 
@@ -47,7 +46,7 @@ export default function AgentDashboard() {
            <div className="absolute top-0 right-0 w-12 h-12 bg-accent/5 rounded-bl-full -mr-3 -mt-3" />
           <CardHeader className="p-5 pb-1">
             <CardTitle className="text-[10px] uppercase font-bold tracking-[0.1em] text-muted flex items-center gap-2">
-              <Users className="w-3 h-3 text-accent" /> Assigned Assets
+              <Users className="w-3 h-3 text-accent" /> Total Leads
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0">
@@ -59,7 +58,7 @@ export default function AgentDashboard() {
           <div className="absolute top-0 right-0 w-12 h-12 bg-primary/5 rounded-bl-full -mr-3 -mt-3" />
           <CardHeader className="p-5 pb-1">
             <CardTitle className="text-[10px] uppercase font-bold tracking-[0.1em] text-muted flex items-center gap-2">
-               <ActivitySquare className="w-3 h-3 text-primary" /> Closures
+               <ActivitySquare className="w-3 h-3 text-primary" /> Converted
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0">
@@ -72,7 +71,7 @@ export default function AgentDashboard() {
         <Card className="border-accent/10 shadow-md rounded-2xl bg-white">
           <CardHeader className="p-5 pb-3 border-b bg-sand-light/50">
             <CardTitle className="text-xs uppercase tracking-[.15em] font-serif font-bold flex items-center text-secondary">
-               Upcoming Target Points
+               Targets & Deadlines
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 flex flex-col gap-4">
@@ -95,7 +94,7 @@ export default function AgentDashboard() {
         <Card className="border-accent/10 shadow-md rounded-2xl overflow-hidden bg-white">
           <CardHeader className="p-5 pb-3 border-b bg-sand-light/50">
             <CardTitle className="text-xs uppercase tracking-[.15em] font-serif font-bold flex items-center text-secondary">
-               Queue Status
+               Lead Stages
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 grid grid-cols-2 gap-2">
@@ -114,16 +113,16 @@ export default function AgentDashboard() {
 
       <div className="space-y-4 pt-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-serif font-bold text-secondary">Follow-ups Today</h2>
+          <h2 className="text-xl font-serif font-bold text-secondary">Today's Follow-ups</h2>
           <Button variant="link" size="sm" asChild className="p-0 h-auto text-primary text-[10px] font-bold uppercase tracking-widest">
-            <Link href="/agent/leads?status=Follow-up">Analyze Full List</Link>
+            <Link href="/agent/leads?status=Follow-up">View All</Link>
           </Button>
         </div>
         
         {data?.followUps?.length === 0 ? (
           <div className="text-center p-12 border-2 border-dashed rounded-3xl bg-white border-accent/10 text-muted">
             <Phone className="h-10 w-10 mx-auto mb-4 opacity-20" />
-            <p className="font-serif italic">Operational silence. No tasks scheduled for this cycle.</p>
+            <p className="font-serif italic">No follow-ups for today.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -148,7 +147,7 @@ export default function AgentDashboard() {
                 <div className="flex gap-3">
                   <Button size="sm" className="bg-secondary hover:bg-black text-white font-bold h-10 rounded-xl px-4 flex-1 shadow-md" asChild>
                     <a href={`tel:${log.leadId.phone}`} className="flex items-center justify-center gap-2">
-                       <Phone className="w-3 h-3" /> Initiate Call
+                       <Phone className="w-3 h-3" /> Call
                     </a>
                   </Button>
                   <Button size="sm" variant="outline" className="border-accent/20 hover:bg-accent/10 h-10 rounded-xl px-4 text-accent font-bold" asChild>

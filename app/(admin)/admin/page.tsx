@@ -30,8 +30,8 @@ export default function AdminDashboard() {
     <div className="space-y-8 pb-8">
       <div className="flex justify-between items-end">
         <div className="space-y-1">
-          <h1 className="text-3xl font-serif font-bold tracking-tight text-secondary">Executive Command</h1>
-          <p className="text-sm text-muted">Daily performance audit & operational overview.</p>
+          <h1 className="text-3xl font-serif font-bold tracking-tight text-secondary">Dashboard</h1>
+          <p className="text-sm text-muted">Overview of all leads and agent performance.</p>
         </div>
         <div className="hidden md:block">
           <p className="text-[10px] uppercase font-bold text-accent tracking-[.2em]">Last updated: {new Date().toLocaleTimeString()}</p>
@@ -43,12 +43,12 @@ export default function AdminDashboard() {
           <div className="absolute top-0 right-0 w-16 h-16 bg-accent/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-[10px] uppercase font-bold tracking-[.1em] text-muted flex items-center gap-2">
-              <Users className="w-3 h-3 text-accent" /> Total Lead Pipeline
+              <Users className="w-3 h-3 text-accent" /> Total Leads
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0">
             <div className="text-3xl font-serif font-bold text-secondary">{data?.totalLeads || 0}</div>
-            <p className="text-[10px] text-accent mt-1 font-medium italic">Active global records</p>
+            <p className="text-[10px] text-accent mt-1 font-medium italic">All leads in system</p>
           </CardContent>
         </Card>
         
@@ -56,23 +56,23 @@ export default function AdminDashboard() {
           <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
           <CardHeader className="p-5 pb-2">
             <CardTitle className="text-[10px] uppercase font-bold tracking-[.1em] text-muted flex items-center gap-2">
-              <TrendingUp className="w-3 h-3 text-primary" /> Conversion Efficiency
+              <TrendingUp className="w-3 h-3 text-primary" /> Converted
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0">
             <div className="text-3xl font-serif font-bold text-primary">{data?.converted || 0}</div>
-            <p className="text-[10px] text-primary/60 mt-1 font-medium italic">Successful closures</p>
+            <p className="text-[10px] text-primary/60 mt-1 font-medium italic">Successfully converted</p>
           </CardContent>
         </Card>
 
         <Card className="border-accent/10 shadow-sm bg-sand-light relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-16 h-16 bg-accent/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
           <CardHeader className="p-5 pb-2">
-            <CardTitle className="text-[10px] uppercase font-bold tracking-[.1em] text-muted">Intake: Last 24h</CardTitle>
+            <CardTitle className="text-[10px] uppercase font-bold tracking-[.1em] text-muted">New Today</CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0">
             <div className="text-3xl font-serif font-bold text-secondary">{data?.newToday || 0}</div>
-            <p className="text-[10px] text-accent mt-1 font-medium italic">New opportunities</p>
+            <p className="text-[10px] text-accent mt-1 font-medium italic">Added in last 24 hours</p>
           </CardContent>
         </Card>
       </div>
@@ -82,7 +82,7 @@ export default function AdminDashboard() {
           <CardHeader className="p-5 pb-4 border-b bg-sand-light/50">
             <CardTitle className="text-xs uppercase tracking-[.15em] font-serif font-bold flex items-center text-secondary">
               <div className="w-2 h-2 bg-primary rounded-full mr-3 shadow-[0_0_8px_rgba(192,0,0,0.4)]" />
-              Strategic Deadlines
+              Deadlines & Targets
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 flex flex-col gap-4">
@@ -92,7 +92,7 @@ export default function AdminDashboard() {
                   <div key={group._id} className="flex justify-between items-center group/item hover:translate-x-1 transition-transform">
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-secondary">{group.count} Leads Pending</span>
-                      <span className="text-[9px] uppercase tracking-wider text-muted font-bold">Priority Status</span>
+                      <span className="text-[9px] uppercase tracking-wider text-muted font-bold">Pending</span>
                     </div>
                     <Badge variant="outline" className="bg-sand-light text-accent border-accent/20 px-3 py-1 font-bold text-[10px]">
                       TARGET: {group._id} DAYS
@@ -109,7 +109,7 @@ export default function AdminDashboard() {
           <CardHeader className="p-5 pb-4 border-b bg-sand-light/50">
             <CardTitle className="text-xs uppercase tracking-[.15em] font-serif font-bold flex items-center text-secondary">
                <div className="w-2 h-2 bg-accent rounded-full mr-3 shadow-[0_0_8px_rgba(212,175,55,0.4)]" />
-               Pipeline Stages
+               Lead Stages
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 grid grid-cols-2 gap-3">
@@ -133,8 +133,8 @@ export default function AdminDashboard() {
 
       <div className="space-y-6 pt-4">
         <div>
-          <h2 className="text-2xl font-serif font-bold text-secondary">Elite Force Performance</h2>
-          <p className="text-xs text-muted uppercase tracking-wider font-bold">Top performers & conversion metrics</p>
+          <h2 className="text-2xl font-serif font-bold text-secondary">Agent Performance</h2>
+          <p className="text-xs text-muted uppercase tracking-wider font-bold">Top agents & conversion rates</p>
         </div>
         
         <Card className="border-accent/10 shadow-xl overflow-hidden rounded-2xl bg-white">
@@ -142,10 +142,10 @@ export default function AdminDashboard() {
             <Table>
               <TableHeader className="bg-secondary">
                 <TableRow className="hover:bg-secondary border-b-accent/20">
-                  <TableHead className="text-white font-serif tracking-wide h-14">OFFICER NAME</TableHead>
+                  <TableHead className="text-white font-serif tracking-wide h-14">AGENT NAME</TableHead>
                   <TableHead className="text-center text-white font-serif tracking-wide h-14 uppercase text-[10px]">Records Assigned</TableHead>
-                  <TableHead className="text-center text-accent font-serif tracking-wide h-14 uppercase text-[10px]">Success Count</TableHead>
-                  <TableHead className="text-center text-white font-serif tracking-wide h-14 uppercase text-[10px]">Conversion Index</TableHead>
+                  <TableHead className="text-center text-accent font-serif tracking-wide h-14 uppercase text-[10px]">Conversions</TableHead>
+                  <TableHead className="text-center text-white font-serif tracking-wide h-14 uppercase text-[10px]">Rate</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
                 {(!data?.agentPerformance || data.agentPerformance.length === 0) && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center py-12 text-muted italic">
-                      No operational data available for auditing.
+                      No agent data available.
                     </TableCell>
                   </TableRow>
                 )}

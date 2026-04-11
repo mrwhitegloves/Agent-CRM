@@ -56,13 +56,13 @@ export default function LoginPage() {
 
         <Card className="border-accent/10 shadow-2xl bg-white rounded-3xl overflow-hidden">
           <CardHeader className="space-y-1 text-center bg-sand-light/50 p-8 border-b border-accent/10">
-            <CardTitle className="text-xl font-serif font-bold text-secondary tracking-tight">Executive Login</CardTitle>
-            <CardDescription className="text-xs uppercase font-bold text-muted tracking-wide">Identity Verification Required</CardDescription>
+            <CardTitle className="text-xl font-serif font-bold text-secondary tracking-tight">Login</CardTitle>
+            <CardDescription className="text-xs uppercase font-bold text-muted tracking-wide">Enter your credentials to continue</CardDescription>
           </CardHeader>
           <CardContent className="p-8">
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-widest text-muted ml-1">Secure Email</Label>
+                <Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-widest text-muted ml-1">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -74,7 +74,7 @@ export default function LoginPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-[10px] uppercase font-bold tracking-widest text-muted ml-1">Access Token</Label>
+                <Label htmlFor="password" className="text-[10px] uppercase font-bold tracking-widest text-muted ml-1">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -85,7 +85,7 @@ export default function LoginPage() {
                 />
               </div>
               <Button type="submit" className="w-full bg-secondary hover:bg-black text-white font-bold h-12 rounded-xl shadow-lg transition-all active:scale-95" disabled={loading}>
-                {loading ? "Authenticating..." : "Authorize Portal"}
+                {loading ? "Logging in..." : "Login"}
               </Button>
             </form>
           </CardContent>
