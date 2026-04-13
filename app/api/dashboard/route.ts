@@ -114,14 +114,53 @@ export async function GET(req: NextRequest) {
             { $match: { assignedAgentId: agentObjectId, status: "Converted" } },
             { $group: { _id: null, total: { $sum: "$commissionAmount" } } },
           ]),
-          Activity.find({
-            agentId: agentObjectId,
-            nextFollowUpDate: { $ne: null, $gte: today, $lte: new Date(tomorrow.getTime() + 7 * 24 * 60 * 60 * 1000) },
-          })
-            .populate("leadId", "name phone status _id")
-            .sort({ nextFollowUpDate: 1 })
-            .limit(20)
-            .lean(),
+          // Deduplicated follow-ups: latest activity per lead that has a future follow-up date
+          Activity.aggregate([
+            {
+              $match: {
+                agentId: agentObjectId,
+                nextFollowUpDate: {
+                  $ne: null,
+                  $lte: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000), // up to 7 days ahead
+                },
+              },
+            },
+            { $sort: { nextFollowUpDate: -1 } }, // latest first per lead
+            {
+              $group: {
+                _id: "$leadId",                       // deduplicate by lead
+                activityId: { $first: "$_id" },
+                nextFollowUpDate: { $first: "$nextFollowUpDate" },
+                comment: { $first: "$comment" },
+                agentId: { $first: "$agentId" },
+              },
+            },
+            { $sort: { nextFollowUpDate: 1 } },     // sort ascending for display
+            { $limit: 20 },
+            {
+              $lookup: {
+                from: "leads",
+                localField: "_id",
+                foreignField: "_id",
+                as: "leadInfo",
+              },
+            },
+            { $unwind: "$leadInfo" },
+            {
+              $project: {
+                _id: "$activityId",
+                leadId: {
+                  _id: "$leadInfo._id",
+                  name: "$leadInfo.name",
+                  phone: "$leadInfo.phone",
+                  status: "$leadInfo.status",
+                },
+                nextFollowUpDate: 1,
+                comment: 1,
+                agentId: 1,
+              },
+            },
+          ]),
           Activity.find({ agentId: agentObjectId })
             .populate("leadId", "name phone")
             .sort({ timestamp: -1 })

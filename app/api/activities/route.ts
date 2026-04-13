@@ -42,9 +42,12 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     await connectDB();
     const body = await req.json();
+    const { clearFollowUp, ...activityData } = body;
 
+    // When clearing, force nextFollowUpDate to null on the new log entry
     const activity = await Activity.create({
-      ...body,
+      ...activityData,
+      nextFollowUpDate: clearFollowUp ? null : activityData.nextFollowUpDate,
       agentId: new mongoose.Types.ObjectId(user.userId),
     });
 
@@ -54,6 +57,15 @@ export async function POST(req: NextRequest) {
         status: body.status,
         lastUpdated: new Date(),
       });
+    }
+
+    // If clearing follow-up, also null out nextFollowUpDate on all previous activities for this lead
+    // so they don't show up in the deduplication query
+    if (clearFollowUp) {
+      await Activity.updateMany(
+        { leadId: body.leadId, nextFollowUpDate: { $ne: null } },
+        { $set: { nextFollowUpDate: null } }
+      );
     }
 
     // Populate leadId for the response
