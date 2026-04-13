@@ -49,15 +49,13 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
     return hour12 === 12 ? 0 : hour12;
   };
 
-  // Emit ISO string whenever any selection changes
+  // Emit proper UTC ISO string whenever any selection changes
   useEffect(() => {
     if (selectedDate) {
       const d = new Date(selectedDate);
-      const h = hour24();
-      d.setHours(h, minute, 0, 0);
-      const pad = (n: number) => String(n).padStart(2, "0");
-      const str = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(h)}:${pad(minute)}`;
-      onChange(str);
+      d.setHours(hour24(), minute, 0, 0);
+      // toISOString() always emits UTC with Z — no ambiguity between server/browser timezones
+      onChange(d.toISOString());
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, hour12, minute, isPm]);

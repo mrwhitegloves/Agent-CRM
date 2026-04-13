@@ -18,6 +18,7 @@ export function formatDate(date: string | Date) {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: "Asia/Kolkata",
   });
 }
 
@@ -27,6 +28,8 @@ export function formatDateTime(date: string | Date) {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
   });
 }
 
