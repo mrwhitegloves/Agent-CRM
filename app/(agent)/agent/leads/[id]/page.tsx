@@ -37,22 +37,36 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const [newStatus, setNewStatus] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const fetchLeadDetails = async () => {
+  const fetchLeadDetails = async (attempt = 1) => {
     try {
       const [leadRes, actRes] = await Promise.all([
-        fetch(`/api/leads/${id}`),
-        fetch(`/api/activities?leadId=${id}`)
+        fetch(`/api/leads/${id}`, { cache: "no-store" }),
+        fetch(`/api/activities?leadId=${id}`, { cache: "no-store" })
       ]);
       const leadData = await leadRes.json();
       const actData = await actRes.json();
-      
+
+      if (!leadData.lead && attempt < 3) {
+        // Cold-start retry: wait 1s then try again (up to 3 times)
+        setTimeout(() => fetchLeadDetails(attempt + 1), 1000 * attempt);
+        return;
+      }
+
       setLead(leadData.lead);
       setNewStatus(leadData.lead?.status || "Contacted");
       setActivities(actData.activities || []);
     } catch {
-      toast.error("Failed to load details");
+      if (attempt < 3) {
+        setTimeout(() => fetchLeadDetails(attempt + 1), 1000 * attempt);
+        return;
+      }
+      toast.error("Failed to load lead. Please go back and try again.");
     } finally {
-      setLoading(false);
+      if (attempt >= 3) setLoading(false);
+      else if (attempt === 1) {
+        // Show skeleton for up to ~4s max, then force-stop
+        setTimeout(() => setLoading(false), 4000);
+      }
     }
   };
 
@@ -106,10 +120,39 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   if (loading) {
-    return <div className="p-6 font-medium text-gray-500 animate-pulse">Loading lead...</div>;
+    return (
+      <div className="p-4 space-y-4 max-w-lg mx-auto">
+        {/* Header skeleton */}
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse" />
+          <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
+        </div>
+        {/* Card skeleton */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
+          <div className="h-6 w-48 bg-gray-200 rounded animate-pulse" />
+          <div className="h-4 w-32 bg-gray-100 rounded animate-pulse" />
+          <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
+          {[1,2,3].map(i => (
+            <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
+          ))}
+        </div>
+        <p className="text-center text-xs text-gray-400 pt-2">Connecting to database...</p>
+      </div>
+    );
   }
   if (!lead) {
-    return <div className="p-6 font-medium text-red-500">Lead not found.</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 gap-4">
+        <div className="text-5xl">🔍</div>
+        <h2 className="text-lg font-bold text-gray-800">Lead Not Found</h2>
+        <p className="text-sm text-gray-500 text-center">This lead may have been removed or the link is invalid.</p>
+        <Link href="/agent/leads" className="mt-2 px-6 py-3 bg-secondary text-white rounded-xl font-bold text-sm">
+          ← Back to Pipeline
+        </Link>
+      </div>
+    );
   }
 
   return (
