@@ -14,7 +14,6 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -191,7 +190,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* Sticky Bottom Action Bar */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t p-3 px-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40 safe-area-bottom pb-env(safe-area-inset-bottom)">
+      <div className="fixed bottom-[64px] left-0 right-0 bg-white border-t p-3 px-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
         <div className="flex gap-2 max-w-lg mx-auto">
           <Button 
             className="flex-1 bg-green-600 hover:bg-green-700 h-12 rounded-xl text-md"
@@ -214,59 +213,63 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                 Update Status
               </Button>
             </DrawerTrigger>
-            <DrawerContent className="bg-white px-2">
-              <div className="mx-auto w-full max-w-sm">
-                <DrawerHeader>
-                  <DrawerTitle className="text-xl text-gray-900">Update Lead</DrawerTitle>
-                  <DrawerDescription className="text-gray-500">Log a custom note or change the lead status immediately.</DrawerDescription>
-                </DrawerHeader>
-                <div className="p-4 pb-0 space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-gray-800">Change Status</Label>
-                    <Select value={newStatus} onValueChange={(val) => setNewStatus(val)}>
-                      <SelectTrigger className="h-12 rounded-xl bg-white border-gray-300 text-gray-900 focus:ring-blue-500 shadow-sm">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {LEAD_STAGES.map(stage => (
-                          <SelectItem key={stage} value={stage}>{stage}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-gray-800">Add Internal Note</Label>
-                    <textarea 
-                      className="w-full flex min-h-[100px] rounded-xl border border-gray-300 bg-white px-3 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-                      placeholder="Type details of your call/message here..."
-                      value={activityNote}
-                      onChange={(e) => setActivityNote(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2" data-vaul-no-drag>
-                    <Label className="text-sm font-semibold whitespace-nowrap flex items-center justify-between text-gray-800">
-                      Next Follow-up Reminder
-                      <span className="text-xs font-normal text-gray-400">(Optional)</span>
-                    </Label>
-                    <DateTimePicker
-                      value={nextFollowUp}
-                      onChange={(val) => setNextFollowUp(val)}
-                    />
-                  </div>
+            <DrawerContent className="bg-white px-0 max-h-[90dvh] flex flex-col">
+              {/* Fixed header */}
+              <DrawerHeader className="border-b pb-3 px-4 shrink-0">
+                <DrawerTitle className="text-xl text-gray-900">Update Lead</DrawerTitle>
+                <DrawerDescription className="text-gray-500">Change status, add a note, or set a follow-up reminder.</DrawerDescription>
+              </DrawerHeader>
+
+              {/* Scrollable body */}
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-gray-800">Change Status</Label>
+                  <Select value={newStatus} onValueChange={(val) => setNewStatus(val)}>
+                    <SelectTrigger className="h-12 rounded-xl bg-white border-gray-300 text-gray-900 focus:ring-blue-500 shadow-sm">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LEAD_STAGES.map(stage => (
+                        <SelectItem key={stage} value={stage}>{stage}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <DrawerFooter className="pt-6">
-                  <Button onClick={handleUpdate} disabled={saving} className="h-12 rounded-xl bg-blue-600 text-md hidden sm:flex">
-                     {saving ? "Saving changes..." : "Save Record"}
-                  </Button>
-                  <Button onClick={handleUpdate} disabled={saving} className="h-14 rounded-2xl bg-blue-600 text-lg sm:hidden font-bold">
-                     {saving ? "Saving..." : "Save Record"}
-                  </Button>
-                  <DrawerClose asChild>
-                    <Button variant="outline" className="h-12 rounded-xl mt-2 text-md">Cancel</Button>
-                  </DrawerClose>
-                </DrawerFooter>
+                
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-gray-800">Add Internal Note</Label>
+                  <textarea 
+                    className="w-full flex min-h-[80px] rounded-xl border border-gray-300 bg-white px-3 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                    placeholder="Type details of your call/message here..."
+                    value={activityNote}
+                    onChange={(e) => setActivityNote(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2" data-vaul-no-drag>
+                  <Label className="text-sm font-semibold flex items-center justify-between text-gray-800">
+                    Next Follow-up Reminder
+                    <span className="text-xs font-normal text-gray-400">(Optional)</span>
+                  </Label>
+                  <DateTimePicker
+                    value={nextFollowUp}
+                    onChange={(val) => setNextFollowUp(val)}
+                  />
+                </div>
+              </div>
+
+              {/* Fixed footer — always visible */}
+              <div className="shrink-0 border-t px-4 py-4 space-y-2 bg-white">
+                <Button
+                  onClick={handleUpdate}
+                  disabled={saving}
+                  className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-base font-bold"
+                >
+                  {saving ? "Saving..." : "Save Record"}
+                </Button>
+                <DrawerClose asChild>
+                  <Button variant="outline" className="w-full h-11 rounded-xl">Cancel</Button>
+                </DrawerClose>
               </div>
             </DrawerContent>
           </Drawer>
