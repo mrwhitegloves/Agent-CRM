@@ -15,6 +15,10 @@ const MONTHS = [
 ];
 const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
+// All 12 hour options for the grid
+const HOURS_12 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate();
 }
@@ -28,22 +32,35 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
   const [viewYear, setViewYear] = useState(now.getFullYear());
   const [viewMonth, setViewMonth] = useState(now.getMonth());
   const [selectedDate, setSelectedDate] = useState<Date | null>(value ? new Date(value) : null);
-  const [hour, setHour] = useState(value ? new Date(value).getHours() : 9);
+
+  // Parse initial hour/minute/ampm from value
+  const initHour24 = value ? new Date(value).getHours() : 9;
+  const initIsPm = initHour24 >= 12;
+  const initHour12 = initHour24 === 0 ? 12 : initHour24 > 12 ? initHour24 - 12 : initHour24;
+
+  const [hour12, setHour12] = useState(initHour12);   // 1-12
   const [minute, setMinute] = useState(value ? new Date(value).getMinutes() : 0);
+  const [isPm, setIsPm] = useState(initIsPm);
   const [showTime, setShowTime] = useState(false);
 
-  // Emit value whenever selection changes
+  // Convert 12h + AM/PM to 24h
+  const hour24 = (): number => {
+    if (isPm) return hour12 === 12 ? 12 : hour12 + 12;
+    return hour12 === 12 ? 0 : hour12;
+  };
+
+  // Emit ISO string whenever any selection changes
   useEffect(() => {
     if (selectedDate) {
       const d = new Date(selectedDate);
-      d.setHours(hour, minute, 0, 0);
-      // Format as datetime-local: YYYY-MM-DDTHH:mm
+      const h = hour24();
+      d.setHours(h, minute, 0, 0);
       const pad = (n: number) => String(n).padStart(2, "0");
-      const str = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(hour)}:${pad(minute)}`;
+      const str = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(h)}:${pad(minute)}`;
       onChange(str);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, hour, minute]);
+  }, [selectedDate, hour12, minute, isPm]);
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
@@ -60,19 +77,17 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
   const selectDay = (day: number) => {
     const d = new Date(viewYear, viewMonth, day);
     setSelectedDate(d);
-    setShowTime(true); // automatically switch to time picker
+    setShowTime(true);
   };
 
   const isToday = (day: number) => {
     const t = new Date();
     return t.getFullYear() === viewYear && t.getMonth() === viewMonth && t.getDate() === day;
   };
-
   const isSelected = (day: number) => {
     if (!selectedDate) return false;
     return selectedDate.getFullYear() === viewYear && selectedDate.getMonth() === viewMonth && selectedDate.getDate() === day;
   };
-
   const isPast = (day: number) => {
     const d = new Date(viewYear, viewMonth, day);
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -80,8 +95,10 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
   };
 
   const pad = (n: number) => String(n).padStart(2, "0");
+
+  // Display string with 12h format
   const displayValue = selectedDate
-    ? `${selectedDate.getDate()} ${MONTHS[selectedDate.getMonth()].slice(0, 3)} ${selectedDate.getFullYear()} at ${pad(hour)}:${pad(minute)}`
+    ? `${selectedDate.getDate()} ${MONTHS[selectedDate.getMonth()].slice(0, 3)} ${selectedDate.getFullYear()} at ${pad(hour12)}:${pad(minute)} ${isPm ? "PM" : "AM"}`
     : null;
 
   return (
@@ -112,42 +129,34 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
         </button>
       </div>
 
-      {/* Selected value display */}
+      {/* Selected value banner */}
       {displayValue && (
         <div className="px-4 py-2 bg-blue-50 border-b border-blue-100">
           <p className="text-xs text-blue-700 font-bold text-center">{displayValue}</p>
         </div>
       )}
 
-      {/* Calendar View */}
+      {/* ── CALENDAR VIEW ── */}
       {!showTime && (
         <div className="p-3">
-          {/* Month navigation */}
           <div className="flex items-center justify-between mb-3">
             <button type="button" onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
               <ChevronLeft className="w-4 h-4 text-gray-600" />
             </button>
-            <span className="text-sm font-bold text-gray-800">
-              {MONTHS[viewMonth]} {viewYear}
-            </span>
+            <span className="text-sm font-bold text-gray-800">{MONTHS[viewMonth]} {viewYear}</span>
             <button type="button" onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
               <ChevronRight className="w-4 h-4 text-gray-600" />
             </button>
           </div>
 
-          {/* Day labels */}
           <div className="grid grid-cols-7 mb-1">
             {DAYS.map(d => (
               <div key={d} className="text-center text-[10px] font-bold text-gray-400 py-1">{d}</div>
             ))}
           </div>
 
-          {/* Day grid */}
           <div className="grid grid-cols-7 gap-y-0.5">
-            {/* Empty cells for first-day offset */}
-            {Array.from({ length: firstDay }).map((_, i) => (
-              <div key={`empty-${i}`} />
-            ))}
+            {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
               const past = isPast(day);
@@ -175,89 +184,97 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
         </div>
       )}
 
-      {/* Time Picker */}
+      {/* ── TIME PICKER ── */}
       {showTime && selectedDate && (
         <div className="p-4 space-y-4">
           <p className="text-xs text-gray-400 text-center font-medium">
             {selectedDate.getDate()} {MONTHS[selectedDate.getMonth()]} {selectedDate.getFullYear()}
           </p>
 
-          {/* Analog-style time display */}
-          <div className="flex items-center justify-center gap-3">
+          {/* Time display — 12h format */}
+          <div className="flex items-center justify-center gap-2">
             <div className="text-5xl font-mono font-bold text-secondary tracking-tight">
-              {pad(hour)}
+              {pad(hour12)}
             </div>
             <div className="text-4xl font-bold text-gray-300">:</div>
             <div className="text-5xl font-mono font-bold text-secondary tracking-tight">
               {pad(minute)}
             </div>
-          </div>
-
-          {/* Hour slider */}
-          <div className="space-y-1">
-            <div className="flex justify-between text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-              <span>Hour</span>
-              <span>{pad(hour)}:00</span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={23}
-              value={hour}
-              onChange={e => setHour(Number(e.target.value))}
-              className="w-full h-2 rounded-full accent-secondary cursor-pointer"
-            />
-            <div className="flex justify-between text-[9px] text-gray-300">
-              <span>12 AM</span>
-              <span>6 AM</span>
-              <span>12 PM</span>
-              <span>6 PM</span>
-              <span>11 PM</span>
+            <div className="text-lg font-bold text-gray-400 self-end pb-1 pl-1">
+              {isPm ? "PM" : "AM"}
             </div>
           </div>
 
-          {/* Minute buttons */}
-          <div className="space-y-1">
-            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Minute</div>
-            <div className="grid grid-cols-6 gap-1.5">
-              {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => (
-                <button
-                  type="button"
-                  key={m}
-                  onClick={() => setMinute(m)}
-                  className={cn(
-                    "h-8 rounded-lg text-xs font-bold transition-all",
-                    minute === m ? "bg-secondary text-white shadow-sm" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  )}
-                >
-                  :{pad(m)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* AM/PM quick set */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
+          {/* AM / PM toggle — fixed, both always clickable */}
+          <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              onClick={() => setHour(h => h >= 12 ? h : h + 0)}
+              onClick={() => setIsPm(false)}
               className={cn(
-                "h-9 rounded-xl text-xs font-bold border transition-all",
-                hour < 12 ? "bg-secondary text-white border-secondary" : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                "h-10 rounded-xl text-sm font-bold border-2 transition-all",
+                !isPm
+                  ? "bg-secondary text-white border-secondary shadow-md"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50"
               )}
             >
               AM
             </button>
             <button
               type="button"
-              onClick={() => setHour(h => h < 12 ? h + 12 : h)}
+              onClick={() => setIsPm(true)}
               className={cn(
-                "h-9 rounded-xl text-xs font-bold border transition-all",
-                hour >= 12 ? "bg-secondary text-white border-secondary" : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                "h-10 rounded-xl text-sm font-bold border-2 transition-all",
+                isPm
+                  ? "bg-secondary text-white border-secondary shadow-md"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50"
               )}
             >
               PM
             </button>
+          </div>
+
+          {/* Hour grid — all 12 hours clearly visible */}
+          <div className="space-y-1.5">
+            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Hour</div>
+            <div className="grid grid-cols-6 gap-1.5">
+              {HOURS_12.map(h => (
+                <button
+                  type="button"
+                  key={h}
+                  onClick={() => setHour12(h)}
+                  className={cn(
+                    "h-9 rounded-lg text-sm font-bold transition-all",
+                    hour12 === h
+                      ? "bg-secondary text-white shadow-sm"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  )}
+                >
+                  {h}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Minute grid */}
+          <div className="space-y-1.5">
+            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Minute</div>
+            <div className="grid grid-cols-6 gap-1.5">
+              {MINUTES.map(m => (
+                <button
+                  type="button"
+                  key={m}
+                  onClick={() => setMinute(m)}
+                  className={cn(
+                    "h-9 rounded-lg text-xs font-bold transition-all",
+                    minute === m
+                      ? "bg-secondary text-white shadow-sm"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  )}
+                >
+                  :{pad(m)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
