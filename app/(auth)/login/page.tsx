@@ -48,7 +48,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm z-10">
         <div className="text-center mb-6 flex flex-col items-center">
            <div className="relative w-24 h-24 mb-4">
-              <Image src="/white-gloves-logo.png" alt="White Gloves" fill className="object-contain" priority />
+              <Image src="/white-gloves-logo.png" alt="White Gloves" fill sizes="96px" className="object-contain" priority />
            </div>
            <h1 className="text-3xl font-serif font-bold tracking-tight text-secondary">White Gloves</h1>
            <div className="h-0.5 w-16 bg-primary mx-auto mt-4 shadow-[0_0_10px_rgba(192,0,0,0.5)]" />

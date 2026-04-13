@@ -62,7 +62,7 @@ export function AdminNav() {
       <nav className="hidden md:flex flex-col w-64 dark-gradient text-white border-r border-gray-800 shrink-0">
         <div className="p-8 flex flex-col items-center">
           <div className="relative w-20 h-20 mb-2">
-            <Image src="/white-gloves-logo.png" alt="White Gloves" fill className="object-contain" priority />
+            <Image src="/white-gloves-logo.png" alt="White Gloves" fill sizes="80px" className="object-contain" priority />
           </div>
           <h1 className="text-xl font-serif font-bold tracking-tighter text-accent">White Gloves</h1>
         </div>

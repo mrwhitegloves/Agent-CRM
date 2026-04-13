@@ -16,7 +16,7 @@ export default async function AgentLayout({ children }: { children: React.ReactN
       <header className="sticky top-0 px-4 md:px-6 py-3 bg-white border-b border-accent/5 flex items-center justify-between z-10 shadow-sm">
         <div className="flex items-center gap-2">
           <div className="relative w-8 h-8">
-            <Image src="/white-gloves-logo.png" alt="White Gloves" fill className="object-contain" />
+            <Image src="/white-gloves-logo.png" alt="White Gloves" fill sizes="32px" className="object-contain" />
           </div>
           <span className="font-serif font-bold text-secondary text-sm">White Gloves</span>
         </div>
