@@ -35,7 +35,11 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const [activityNote, setActivityNote] = useState("");
   const [nextFollowUp, setNextFollowUp] = useState("");
   const [newStatus, setNewStatus] = useState("");
+  const [customStatus, setCustomStatus] = useState(""); // for "Other..." option
   const [saving, setSaving] = useState(false);
+
+  // Resolve what status to actually save
+  const resolvedStatus = newStatus === "__other__" ? customStatus.trim() : newStatus;
 
   const fetchLeadDetails = async (attempt = 1) => {
     try {
@@ -79,17 +83,16 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
     setSaving(true);
     try {
       const finalComment = activityNote.trim();
-
-      // Single call: activity + status update handled server-side
+      const statusToSave = resolvedStatus;
       const res = await fetch("/api/activities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           leadId: lead._id,
           type: "Note",
-          comment: finalComment || (newStatus !== lead.status ? `Status changed to ${newStatus}` : ""),
+          comment: finalComment || (statusToSave !== lead.status ? `Status changed to ${statusToSave}` : ""),
           nextFollowUpDate: nextFollowUp || undefined,
-          status: newStatus !== lead.status ? newStatus : undefined,
+          status: statusToSave !== lead.status ? statusToSave : undefined,
         }),
       });
 
@@ -98,12 +101,12 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         return;
       }
 
-      // Also update lead status via PATCH if changed (still needed since activities API now handles it too — idempotent)
-      if (newStatus !== lead.status) {
+      // Also update lead status via PATCH if changed
+      if (statusToSave !== lead.status) {
         await fetch(`/api/leads/${lead._id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
+          body: JSON.stringify({ status: statusToSave }),
         });
       }
 
@@ -267,7 +270,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
               <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold text-gray-800">Change Status</Label>
-                  <Select value={newStatus} onValueChange={(val) => setNewStatus(val)}>
+                  <Select value={newStatus} onValueChange={(val) => { setNewStatus(val); if (val !== "__other__") setCustomStatus(""); }}>
                     <SelectTrigger className="h-12 rounded-xl bg-white border-gray-300 text-gray-900 focus:ring-blue-500 shadow-sm">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -275,8 +278,23 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                       {LEAD_STAGES.map(stage => (
                         <SelectItem key={stage} value={stage}>{stage}</SelectItem>
                       ))}
+                      {/* Custom status option */}
+                      <SelectItem value="__other__">
+                        <span className="text-blue-600 font-semibold">✏️ Other (type your own)...</span>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
+                  {/* Custom status input — shown only when Other is selected */}
+                  {newStatus === "__other__" && (
+                    <input
+                      type="text"
+                      className="w-full h-11 rounded-xl border border-blue-300 bg-blue-50 px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                      placeholder="e.g. Waiting for docs, Called 3x, Site visit done..."
+                      value={customStatus}
+                      onChange={e => setCustomStatus(e.target.value)}
+                      autoFocus
+                    />
+                  )}
                 </div>
                 
                 <div className="space-y-2">
