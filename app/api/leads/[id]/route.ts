@@ -29,6 +29,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (user.role === "agent") {
       delete body.assignedAgentId;
       delete body.commissionAmount;
+    } else if (user.role === "admin") {
+      // Track when a lead gets assigned/unassigned to an agent
+      const existing = await Lead.findById(id).select("assignedAgentId").lean();
+      const oldAgentId = existing?.assignedAgentId?.toString();
+      const newAgentId = body.assignedAgentId;
+      if (newAgentId && newAgentId !== oldAgentId) {
+        body.assignedAt = new Date(); // new assignment → reset clock
+      } else if (!newAgentId || newAgentId === null) {
+        body.assignedAt = null; // unassigning
+      }
     }
     const lead = await Lead.findByIdAndUpdate(id, body, { new: true }).populate("assignedAgentId", "name email phone");
     if (!lead) return NextResponse.json({ error: "Not found" }, { status: 404 });

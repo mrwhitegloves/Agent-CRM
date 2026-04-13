@@ -11,11 +11,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-full h-[100dvh] w-full bg-gray-50">
+    <div className="flex flex-col md:flex-row min-h-[100dvh] w-full bg-gray-50">
       <AdminNav />
-      <main className="flex-1 overflow-y-auto p-4 md:p-8">
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
         {children}
       </main>
     </div>
   );
 }
+

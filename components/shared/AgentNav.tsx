@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Users, Briefcase, LogOut } from "lucide-react";
-import Image from "next/image";
+import { Home, Users, UserCircle, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "./AuthProvider";
 
@@ -14,14 +13,17 @@ export function AgentNav() {
   const links = [
     { href: "/agent", label: "Dashboard", icon: Home },
     { href: "/agent/leads", label: "Leads", icon: Users },
+    { href: "/agent/profile", label: "Profile", icon: UserCircle },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-gray-800 safe-area-bottom pb-env(safe-area-inset-bottom) shadow-[0_-4px_20px_rgba(0,0,0,0.4)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-gray-800 safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.4)]">
       <div className="flex items-center justify-around h-16 px-4">
         {links.map((link) => {
           const Icon = link.icon;
-          const isActive = pathname === link.href;
+          const isActive = link.href === "/agent"
+            ? pathname === "/agent"
+            : pathname.startsWith(link.href);
           return (
             <Link
               key={link.href}

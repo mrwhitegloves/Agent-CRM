@@ -150,20 +150,15 @@ export default function UploadLeadsPage() {
   };
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-10">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="space-y-6 max-w-6xl mx-auto pb-10">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div className="space-y-1">
-          <h1 className="text-3xl font-serif font-bold tracking-tight text-secondary">Upload Leads</h1>
+          <h1 className="text-2xl md:text-3xl font-serif font-bold tracking-tight text-secondary">Upload Leads</h1>
           <p className="text-sm text-muted">Import leads from your Excel or CSV file.</p>
-        </div>
-        <div className="flex items-center gap-3">
-           <Badge variant="outline" className="bg-sand-light text-accent border-accent/20 px-3 py-1 font-bold text-[10px] uppercase tracking-wider">
-             Status: Active
-           </Badge>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
         {/* Step 1: Upload */}
         <div className="lg:col-span-4 space-y-6">
           <Card className={`border-accent/10 shadow-lg bg-sand-light/30 relative overflow-hidden ${excelData.length > 0 ? 'opacity-50 grayscale-[0.5]' : ''}`}>
@@ -297,7 +292,7 @@ export default function UploadLeadsPage() {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="p-8 bg-sand-light/10 border-t border-accent/10 flex flex-col md:flex-row justify-between items-center gap-6 mt-auto">
+            <CardFooter className="p-5 md:p-8 bg-sand-light/10 border-t border-accent/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-auto">
               <div className="flex items-center gap-4">
                  <div className="w-10 h-10 rounded-full bg-white border border-accent/20 flex items-center justify-center shadow-sm">
                     <CheckCircle2 className={cn("w-5 h-5", excelData.length > 0 ? "text-accent" : "text-gray-200")} />

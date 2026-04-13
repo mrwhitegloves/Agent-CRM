@@ -3,6 +3,7 @@ import connectDB from "@/lib/db";
 import mongoose from "mongoose";
 import Lead from "@/models/Lead";
 import Activity from "@/models/Activity";
+import User from "@/models/User";
 import { getTokenFromRequest } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
@@ -17,57 +18,141 @@ export async function GET(req: NextRequest) {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     if (user.role === "admin") {
-      const totalLeads = await Lead.countDocuments();
-      const converted = await Lead.countDocuments({ status: "Converted" });
-      const newToday = await Lead.countDocuments({ createdAt: { $gte: today, $lt: tomorrow } });
-      const totalCommission = await Lead.aggregate([
-        { $match: { status: "Converted" } },
-        { $group: { _id: null, total: { $sum: "$commissionAmount" } } },
+      // Run queries concurrently for speed
+      const [
+        totalLeads,
+        converted,
+        newToday,
+        unassignedCount,
+        totalCommission,
+        statusBreakdown,
+        agentPerformance,
+        timelineGroups,
+        agentLeadCounts,
+      ] = await Promise.all([
+        Lead.countDocuments(),
+        Lead.countDocuments({ status: "Converted" }),
+        Lead.countDocuments({ createdAt: { $gte: today, $lt: tomorrow } }),
+        Lead.countDocuments({ assignedAgentId: null }),
+        Lead.aggregate([
+          { $match: { status: "Converted" } },
+          { $group: { _id: null, total: { $sum: "$commissionAmount" } } },
+        ]),
+        Lead.aggregate([
+          { $group: { _id: "$status", count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+        ]),
+        Lead.aggregate([
+          { $match: { assignedAgentId: { $ne: null } } },
+          {
+            $group: {
+              _id: "$assignedAgentId",
+              total: { $sum: 1 },
+              converted: { $sum: { $cond: [{ $eq: ["$status", "Converted"] }, 1, 0] } },
+              commission: { $sum: "$commissionAmount" },
+            },
+          },
+          { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "agent" } },
+          { $unwind: "$agent" },
+          { $project: { name: "$agent.name", email: "$agent.email", isActive: "$agent.isActive", total: 1, converted: 1, commission: 1 } },
+          { $sort: { converted: -1 } },
+          { $limit: 20 },
+        ]),
+        Lead.aggregate([
+          { $match: { timelineDays: { $exists: true, $gt: 0 }, status: { $nin: ["Converted", "Not Interested"] } } },
+          { $group: { _id: "$timelineDays", count: { $sum: 1 } } },
+          { $sort: { _id: 1 } },
+        ]),
+        // Per-agent lead assignment count (all agents, including those with 0 leads)
+        User.aggregate([
+          { $match: { role: "agent" } },
+          {
+            $lookup: {
+              from: "leads",
+              localField: "_id",
+              foreignField: "assignedAgentId",
+              as: "leads",
+            },
+          },
+          {
+            $project: {
+              name: 1,
+              email: 1,
+              phone: 1,
+              isActive: 1,
+              leadsCount: { $size: "$leads" },
+              convertedCount: {
+                $size: {
+                  $filter: { input: "$leads", as: "l", cond: { $eq: ["$$l.status", "Converted"] } },
+                },
+              },
+            },
+          },
+          { $sort: { leadsCount: -1 } },
+        ]),
       ]);
-      const statusBreakdown = await Lead.aggregate([
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-      ]);
-      const agentPerformance = await Lead.aggregate([
-        { $match: { assignedAgentId: { $ne: null } } },
-        { $group: { _id: "$assignedAgentId", total: { $sum: 1 }, converted: { $sum: { $cond: [{ $eq: ["$status", "Converted"] }, 1, 0] } }, commission: { $sum: "$commissionAmount" } } },
-        { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "agent" } },
-        { $unwind: "$agent" },
-        { $project: { name: "$agent.name", total: 1, converted: 1, commission: 1 } },
-        { $sort: { converted: -1 } },
-        { $limit: 10 },
-      ]);
-      const timelineGroups = await Lead.aggregate([
-        { $match: { timelineDays: { $exists: true, $gt: 0 }, status: { $nin: ["Converted", "Not Interested"] } } },
-        { $group: { _id: "$timelineDays", count: { $sum: 1 } } },
-        { $sort: { _id: 1 } }
-      ]).exec();
-      return NextResponse.json({ totalLeads, converted, newToday, totalCommission: totalCommission[0]?.total || 0, statusBreakdown, agentPerformance, timelineGroups });
+
+      return NextResponse.json({
+        totalLeads,
+        converted,
+        newToday,
+        unassignedCount,
+        totalCommission: totalCommission[0]?.total || 0,
+        statusBreakdown,
+        agentPerformance,
+        timelineGroups,
+        agentLeadCounts,
+      });
     } else {
-      const myLeads = await Lead.countDocuments({ assignedAgentId: user.userId });
-      const myConverted = await Lead.countDocuments({ assignedAgentId: user.userId, status: "Converted" });
-      const myCommission = await Lead.aggregate([
-        { $match: { assignedAgentId: new mongoose.Types.ObjectId(user.userId), status: "Converted" } },
-        { $group: { _id: null, total: { $sum: "$commissionAmount" } } },
-      ]);
-      const followUps = await Activity.find({
-        agentId: user.userId,
-        nextFollowUpDate: { $gte: today, $lt: tomorrow },
-      }).populate("leadId", "name phone status").lean();
-      const recentActivity = await Activity.find({ agentId: user.userId })
-        .populate("leadId", "name phone")
-        .sort({ timestamp: -1 })
-        .limit(5)
-        .lean();
-      const statusBreakdown = await Lead.aggregate([
-        { $match: { assignedAgentId: new mongoose.Types.ObjectId(user.userId) } },
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-      ]);
-      const timelineGroups = await Lead.aggregate([
-        { $match: { assignedAgentId: new mongoose.Types.ObjectId(user.userId), timelineDays: { $exists: true, $gt: 0 }, status: { $nin: ["Converted", "Not Interested"] } } },
-        { $group: { _id: "$timelineDays", count: { $sum: 1 } } },
-        { $sort: { _id: 1 } }
-      ]).exec();
-      return NextResponse.json({ myLeads, myConverted, myCommission: myCommission[0]?.total || 0, followUps, recentActivity, statusBreakdown, timelineGroups });
+      // Agent dashboard - concurrent queries
+      const agentObjectId = new mongoose.Types.ObjectId(user.userId);
+      const [myLeads, myConverted, myCommission, followUps, recentActivity, statusBreakdown, timelineGroups] =
+        await Promise.all([
+          Lead.countDocuments({ assignedAgentId: user.userId }),
+          Lead.countDocuments({ assignedAgentId: user.userId, status: "Converted" }),
+          Lead.aggregate([
+            { $match: { assignedAgentId: agentObjectId, status: "Converted" } },
+            { $group: { _id: null, total: { $sum: "$commissionAmount" } } },
+          ]),
+          Activity.find({
+            agentId: agentObjectId,
+            nextFollowUpDate: { $ne: null, $gte: today, $lte: new Date(tomorrow.getTime() + 7 * 24 * 60 * 60 * 1000) },
+          })
+            .populate("leadId", "name phone status _id")
+            .sort({ nextFollowUpDate: 1 })
+            .limit(20)
+            .lean(),
+          Activity.find({ agentId: agentObjectId })
+            .populate("leadId", "name phone")
+            .sort({ timestamp: -1 })
+            .limit(5)
+            .lean(),
+          Lead.aggregate([
+            { $match: { assignedAgentId: agentObjectId } },
+            { $group: { _id: "$status", count: { $sum: 1 } } },
+          ]),
+          Lead.aggregate([
+            {
+              $match: {
+                assignedAgentId: agentObjectId,
+                timelineDays: { $exists: true, $gt: 0 },
+                status: { $nin: ["Converted", "Not Interested"] },
+              },
+            },
+            { $group: { _id: "$timelineDays", count: { $sum: 1 } } },
+            { $sort: { _id: 1 } },
+          ]),
+        ]);
+
+      return NextResponse.json({
+        myLeads,
+        myConverted,
+        myCommission: myCommission[0]?.total || 0,
+        followUps,
+        recentActivity,
+        statusBreakdown,
+        timelineGroups,
+      });
     }
   } catch (e) {
     console.error(e);

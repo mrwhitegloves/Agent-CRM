@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserPlus, Shield, Phone, Mail, Copy, Key, Power, Trash2 } from "lucide-react";
+import { UserPlus, Shield, Phone, Mail, Copy, Key, Power, Users } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import {
@@ -20,6 +20,8 @@ import {
 export default function AgentsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [agents, setAgents] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [agentLeadCounts, setAgentLeadCounts] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   
@@ -39,9 +41,20 @@ export default function AgentsPage() {
 
   const fetchAgents = async () => {
     try {
-      const res = await fetch("/api/agents", { cache: "no-store" });
-      const data = await res.json();
-      setAgents(data.agents || []);
+      const [agentsRes, dashRes] = await Promise.all([
+        fetch("/api/agents", { cache: "no-store" }),
+        fetch("/api/dashboard", { cache: "no-store" }),
+      ]);
+      const agentsData = await agentsRes.json();
+      const dashData = await dashRes.json();
+      setAgents(agentsData.agents || []);
+      // Build lookup: agentId -> lead count info
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const counts: Record<string, any> = {};
+      for (const a of (dashData.agentLeadCounts || [])) {
+        counts[a._id] = a;
+      }
+      setAgentLeadCounts(counts);
     } catch {
       toast.error("Failed to load agents");
     } finally {
@@ -179,13 +192,63 @@ export default function AgentsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-0">
-            <div className="overflow-x-auto">
+            {/* Mobile card view */}
+            <div className="block lg:hidden divide-y divide-gray-50">
+              {loading ? (
+                <div className="text-center py-8 text-gray-400">Loading agents...</div>
+              ) : agents.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">No agents found.</div>
+              ) : agents.map((agent) => (
+                <div key={agent._id} className="p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white shrink-0 ${agent.isActive ? "bg-secondary" : "bg-gray-400"}`}>
+                        {agent.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900 text-sm">{agent.name}</p>
+                        <p className="text-xs text-gray-500">{agent.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${agent.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                        {agent.isActive ? "Active" : "Inactive"}
+                      </span>
+                      <span className="text-xs text-gray-500 font-medium">
+                        {agentLeadCounts[agent._id]?.leadsCount ?? 0} leads · {agentLeadCounts[agent._id]?.convertedCount ?? 0} converted
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => copyToClipboard(agent.email)}>
+                      <Copy className="w-3 h-3 mr-1" /> Copy
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-xs h-8 text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => setEditingAgent(agent)}>
+                      <Key className="w-3 h-3 mr-1" /> Password
+                    </Button>
+                    <Button
+                      variant="outline" size="sm"
+                      className={cn("text-xs h-8", agent.isActive ? "text-red-600 border-red-200 hover:bg-red-50" : "text-green-600 border-green-200 hover:bg-green-50")}
+                      onClick={() => handleUpdateStatus(agent._id, agent.isActive)}
+                    >
+                      <Power className="w-3 h-3 mr-1" />{agent.isActive ? "Disable" : "Enable"}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden lg:block overflow-x-auto">
               <Table>
                 <TableHeader className="bg-gray-50">
                   <TableRow>
                     <TableHead className="pl-6">Agent Details</TableHead>
                     <TableHead>Contact Info</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>
+                      <span className="flex items-center gap-1"><Users className="w-3 h-3" /> Leads</span>
+                    </TableHead>
                     <TableHead>Joined</TableHead>
                     <TableHead className="text-right pr-6">Management</TableHead>
                   </TableRow>
@@ -222,36 +285,26 @@ export default function AgentsPage() {
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Inactive</span>
                         )}
                       </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-gray-800">{agentLeadCounts[agent._id]?.leadsCount ?? 0}</span>
+                          <span className="text-[10px] text-gray-400">{agentLeadCounts[agent._id]?.convertedCount ?? 0} converted</span>
+                        </div>
+                      </TableCell>
                       <TableCell className="text-sm text-gray-500">
                         {new Date(agent.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right pr-6">
                         <div className="flex flex-wrap justify-end gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="text-xs h-8"
-                            onClick={() => copyToClipboard(agent.email)}
-                          >
-                            <Copy className="w-3 h-3 mr-1" />
-                            Copy
+                          <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => copyToClipboard(agent.email)}>
+                            <Copy className="w-3 h-3 mr-1" /> Copy
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            className="text-xs h-8 text-blue-600 border-blue-200 hover:bg-blue-50"
-                            onClick={() => setEditingAgent(agent)}
-                          >
-                            <Key className="w-3 h-3 mr-1" />
-                            Password
+                          <Button variant="outline" size="sm" className="text-xs h-8 text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => setEditingAgent(agent)}>
+                            <Key className="w-3 h-3 mr-1" /> Password
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            className={cn(
-                              "text-xs h-8",
-                              agent.isActive ? "text-red-600 border-red-200 hover:bg-red-50" : "text-green-600 border-green-200 hover:bg-green-50"
-                            )}
+                          <Button
+                            variant="outline" size="sm"
+                            className={cn("text-xs h-8", agent.isActive ? "text-red-600 border-red-200 hover:bg-red-50" : "text-green-600 border-green-200 hover:bg-green-50")}
                             onClick={() => handleUpdateStatus(agent._id, agent.isActive)}
                           >
                             <Power className="w-3 h-3 mr-1" />
@@ -266,6 +319,7 @@ export default function AgentsPage() {
             </div>
           </CardContent>
         </Card>
+
       </div>
 
       <Dialog open={!!editingAgent} onOpenChange={(open) => !open && setEditingAgent(null)}>

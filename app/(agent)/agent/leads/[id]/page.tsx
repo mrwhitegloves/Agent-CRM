@@ -5,8 +5,8 @@ import { useEffect, useState, use } from "react";
 import { formatDateTime, STATUS_COLORS, LEAD_STAGES } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Phone, MessageCircle, ArrowLeft, MapPin, Building, Info, FileText } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -65,26 +65,27 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
     if (!lead) return;
     setSaving(true);
     try {
-      let finalComment = activityNote.trim();
-      if (newStatus !== lead.status) {
-        finalComment = finalComment 
-          ? `[Changed Status to: ${newStatus}] - ${finalComment}`
-          : `[Changed Status to: ${newStatus}]`;
-      }
+      const finalComment = activityNote.trim();
 
-      // 1. Post Activity
-      await fetch("/api/activities", {
+      // Single call: activity + status update handled server-side
+      const res = await fetch("/api/activities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           leadId: lead._id,
           type: "Note",
-          comment: finalComment,
+          comment: finalComment || (newStatus !== lead.status ? `Status changed to ${newStatus}` : ""),
           nextFollowUpDate: nextFollowUp || undefined,
+          status: newStatus !== lead.status ? newStatus : undefined,
         }),
       });
 
-      // 2. Patch Lead Status
+      if (!res.ok) {
+        toast.error("Failed to save activity");
+        return;
+      }
+
+      // Also update lead status via PATCH if changed (still needed since activities API now handles it too — idempotent)
       if (newStatus !== lead.status) {
         await fetch(`/api/leads/${lead._id}`, {
           method: "PATCH",
@@ -97,7 +98,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       setOpen(false);
       setActivityNote("");
       setNextFollowUp("");
-      fetchLeadDetails(); // refresh
+      fetchLeadDetails();
     } catch {
       toast.error("Failed to update");
     } finally {
@@ -244,19 +245,15 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                     />
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-2" data-vaul-no-drag>
                     <Label className="text-sm font-semibold whitespace-nowrap flex items-center justify-between text-gray-800">
                       Next Follow-up Reminder
                       <span className="text-xs font-normal text-gray-400">(Optional)</span>
                     </Label>
-                    <div data-vaul-no-drag>
-                      <Input 
-                        type="datetime-local" 
-                        className="h-12 rounded-xl bg-white border-gray-300 text-gray-900 block w-full text-base shadow-sm focus:ring-blue-500"
-                        onChange={(e) => setNextFollowUp(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
+                    <DateTimePicker
+                      value={nextFollowUp}
+                      onChange={(val) => setNextFollowUp(val)}
+                    />
                   </div>
                 </div>
                 <DrawerFooter className="pt-6">

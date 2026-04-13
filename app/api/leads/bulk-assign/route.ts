@@ -18,9 +18,11 @@ export async function POST(req: NextRequest) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateData: any = {};
+    const updateData: any = { lastUpdated: new Date() };
     if (assignedAgentId !== undefined) {
-      updateData.assignedAgentId = assignedAgentId === "unassigned" ? null : assignedAgentId;
+      const agentIdValue = assignedAgentId === "unassigned" ? null : assignedAgentId;
+      updateData.assignedAgentId = agentIdValue;
+      updateData.assignedAt = agentIdValue ? new Date() : null;
     }
     if (timelineDays !== undefined) {
       updateData.timelineDays = timelineDays;

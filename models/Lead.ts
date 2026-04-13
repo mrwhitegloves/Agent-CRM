@@ -15,6 +15,7 @@ export interface ILead extends Document {
   city: string;
   source: string;
   assignedAgentId?: Types.ObjectId;
+  assignedAt?: Date;
   status: LeadStatus;
   commissionAmount: number;
   timelineDays?: number;
@@ -30,6 +31,7 @@ const LeadSchema = new Schema<ILead>(
     city: { type: String, trim: true, default: "" },
     source: { type: String, trim: true, default: "" },
     assignedAgentId: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    assignedAt: { type: Date, default: null },
     status: {
       type: String,
       enum: ["New Lead", "Contacted", "DNP", "Interested", "Follow-up", "Converted", "Not Interested"],
@@ -43,9 +45,17 @@ const LeadSchema = new Schema<ILead>(
   { timestamps: true }
 );
 
+// Performance indexes
+LeadSchema.index({ assignedAgentId: 1, status: 1 });
+LeadSchema.index({ status: 1 });
+LeadSchema.index({ createdAt: -1 });
+LeadSchema.index({ lastUpdated: -1 });
+LeadSchema.index({ name: "text", phone: "text", city: "text" });
+LeadSchema.index({ assignedAt: 1, timelineDays: 1, assignedAgentId: 1 });
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 LeadSchema.pre("save", function (this: any, next: any) {
   this.lastUpdated = new Date();
-  // @ts-ignore
   next();
 });
 
