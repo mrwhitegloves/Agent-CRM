@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import "./User"; // Ensure User model is registered for population
 
 export type LeadStatus =
   | "New Lead"

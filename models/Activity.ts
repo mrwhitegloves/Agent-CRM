@@ -1,4 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import "./Lead";
+import "./User";
 
 export type ActivityType = "Call" | "WhatsApp" | "Note";
 
