@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
           { $group: { _id: "$timelineDays", count: { $sum: 1 } } },
           { $sort: { _id: 1 } },
         ]),
-        // Per-agent lead assignment count (all agents, including those with 0 leads)
+        // Per-agent lead assignment count with per-status breakdown
         User.aggregate([
           { $match: { role: "agent" } },
           {
@@ -84,6 +84,46 @@ export async function GET(req: NextRequest) {
               convertedCount: {
                 $size: {
                   $filter: { input: "$leads", as: "l", cond: { $eq: ["$$l.status", "Converted"] } },
+                },
+              },
+              // Build a status breakdown array: [{status, count}]
+              statusBreakdown: {
+                $reduce: {
+                  input: "$leads",
+                  initialValue: [],
+                  in: {
+                    $let: {
+                      vars: {
+                        idx: { $indexOfArray: ["$$value.status", "$$this.status"] },
+                      },
+                      in: {
+                        $cond: [
+                          { $eq: ["$$idx", -1] },
+                          // Status not yet in array — append new entry
+                          {
+                            $concatArrays: [
+                              "$$value",
+                              [{ status: "$$this.status", count: 1 }],
+                            ],
+                          },
+                          // Status already exists — increment its count
+                          {
+                            $map: {
+                              input: "$$value",
+                              as: "entry",
+                              in: {
+                                $cond: [
+                                  { $eq: ["$$entry.status", "$$this.status"] },
+                                  { status: "$$entry.status", count: { $add: ["$$entry.count", 1] } },
+                                  "$$entry",
+                                ],
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  },
                 },
               },
             },

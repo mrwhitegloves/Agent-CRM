@@ -170,13 +170,14 @@ export default function AdminDashboard() {
             <h2 className="text-xl font-serif font-bold text-secondary">Lead Distribution</h2>
             <p className="text-xs text-muted uppercase tracking-wider font-bold">Leads assigned to each agent</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {data.agentLeadCounts.map((agent: any) => (
               <Card key={agent._id} className="border-accent/10 bg-white hover:shadow-md transition-all">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-serif font-bold text-white text-[11px] ${agent.isActive ? "bg-secondary" : "bg-gray-400"}`}>
+                <CardContent className="p-4 space-y-3">
+                  {/* Agent header */}
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-serif font-bold text-white text-[11px] shrink-0 ${agent.isActive ? "bg-secondary" : "bg-gray-400"}`}>
                       {agent.name?.substring(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -186,7 +187,9 @@ export default function AdminDashboard() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex justify-between items-end">
+
+                  {/* Assigned / Converted row */}
+                  <div className="flex justify-between items-end border-b border-gray-100 pb-2">
                     <div>
                       <p className="text-2xl font-serif font-bold text-secondary">{agent.leadsCount}</p>
                       <p className="text-[9px] text-muted font-bold uppercase">Assigned</p>
@@ -196,10 +199,46 @@ export default function AdminDashboard() {
                       <p className="text-[9px] text-primary/60 font-bold uppercase">Converted</p>
                     </div>
                   </div>
+
+                  {/* Status breakdown chips */}
+                  {agent.statusBreakdown && agent.statusBreakdown.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {agent.statusBreakdown
+                        .slice()
+                        .sort((a: any, b: any) => b.count - a.count)
+                        .map((s: any) => {
+                          const colorMap: Record<string, string> = {
+                            "New Lead": "bg-blue-50 text-blue-700 border-blue-200",
+                            "Contacted": "bg-sky-50 text-sky-700 border-sky-200",
+                            "DNP": "bg-red-50 text-red-700 border-red-200",
+                            "Interested": "bg-emerald-50 text-emerald-700 border-emerald-200",
+                            "Follow-up": "bg-yellow-50 text-yellow-700 border-yellow-200",
+                            "Converted": "bg-green-50 text-green-700 border-green-200",
+                            "Not Interested": "bg-gray-100 text-gray-600 border-gray-200",
+                            "NATC (Not Active To Call)": "bg-orange-50 text-orange-700 border-orange-200",
+                          };
+                          const color = colorMap[s.status] || "bg-gray-100 text-gray-600 border-gray-200";
+                          return (
+                            <span
+                              key={s.status}
+                              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border text-[9px] font-bold ${color}`}
+                              title={s.status}
+                            >
+                              <span className="max-w-[70px] truncate">{s.status}</span>
+                              <span className="shrink-0 font-extrabold">{s.count}</span>
+                            </span>
+                          );
+                        })}
+                    </div>
+                  ) : (
+                    <p className="text-[9px] text-muted italic">No leads yet</p>
+                  )}
                 </CardContent>
               </Card>
             ))}
           </div>
+
         </div>
       )}
 

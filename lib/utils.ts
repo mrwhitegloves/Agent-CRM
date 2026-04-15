@@ -41,6 +41,7 @@ export const STATUS_COLORS: Record<string, string> = {
   "Follow-up": "bg-yellow-100 text-yellow-800 border-yellow-300",
   Converted: "bg-green-100 text-green-800 border-green-300",
   "Not Interested": "bg-gray-100 text-gray-800 border-gray-300",
+  "NATC (Not Active To Call)": "bg-orange-100 text-orange-800 border-orange-200",
 };
 
 export const LEAD_STAGES = [
@@ -51,4 +52,5 @@ export const LEAD_STAGES = [
   "Follow-up",
   "Converted",
   "Not Interested",
+  "NATC (Not Active To Call)",
 ];
