@@ -35,6 +35,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const [activityNote, setActivityNote] = useState("");
   const [nextFollowUp, setNextFollowUp] = useState("");
   const [newStatus, setNewStatus] = useState("");
+  const [cityEdit, setCityEdit] = useState("");
   const [saving, setSaving] = useState(false);
 
   const fetchLeadDetails = async (attempt = 1) => {
@@ -54,6 +55,7 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
 
       setLead(leadData.lead);
       setNewStatus(leadData.lead?.status || "Contacted");
+      setCityEdit(leadData.lead?.city || "");
       setActivities(actData.activities || []);
     } catch {
       if (attempt < 3) {
@@ -97,12 +99,15 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         return;
       }
 
-      // Also update lead status via PATCH if changed
-      if (statusToSave !== lead.status) {
+      // Also update lead status / city via PATCH if anything changed
+      const patchBody: Record<string, string> = {};
+      if (statusToSave !== lead.status) patchBody.status = statusToSave;
+      if (cityEdit.trim() !== (lead.city || "")) patchBody.city = cityEdit.trim();
+      if (Object.keys(patchBody).length > 0) {
         await fetch(`/api/leads/${lead._id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: statusToSave }),
+          body: JSON.stringify(patchBody),
         });
       }
 
@@ -277,7 +282,18 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                     </SelectContent>
                   </Select>
                 </div>
-                
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-gray-800">City</Label>
+                  <input
+                    type="text"
+                    className="w-full flex h-12 rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                    placeholder="e.g. Mumbai, Delhi..."
+                    value={cityEdit}
+                    onChange={(e) => setCityEdit(e.target.value)}
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold text-gray-800">Add Internal Note</Label>
                   <textarea 

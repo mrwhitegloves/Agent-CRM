@@ -15,8 +15,9 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
     const search = searchParams.get("search");
+    const batchId = searchParams.get("batchId");
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const limit = parseInt(searchParams.get("limit") || "200");
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const query: any = {};
@@ -25,6 +26,7 @@ export async function GET(req: NextRequest) {
       query.assignedAgentId = user.userId;
     }
     if (status) query.status = status;
+    if (batchId) query.uploadBatchId = batchId;
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: "i" } },

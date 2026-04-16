@@ -173,7 +173,12 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {data.agentLeadCounts.map((agent: any) => (
-              <Card key={agent._id} className="border-accent/10 bg-white hover:shadow-md transition-all">
+              <Link
+                key={agent._id}
+                href={`/admin/agents/${agent._id}`}
+                className="block group"
+              >
+              <Card className="border-accent/10 bg-white hover:shadow-md hover:border-accent/30 transition-all cursor-pointer group-hover:scale-[1.01]">
                 <CardContent className="p-4 space-y-3">
                   {/* Agent header */}
                   <div className="flex items-center gap-2">
@@ -186,6 +191,7 @@ export default function AdminDashboard() {
                         {agent.isActive ? "● Active" : "○ Inactive"}
                       </span>
                     </div>
+                    <span className="text-[9px] text-accent font-bold opacity-0 group-hover:opacity-100 transition-opacity">View →</span>
                   </div>
 
                   {/* Assigned / Converted row */}
@@ -216,7 +222,7 @@ export default function AdminDashboard() {
                             "Follow-up": "bg-yellow-50 text-yellow-700 border-yellow-200",
                             "Converted": "bg-green-50 text-green-700 border-green-200",
                             "Not Interested": "bg-gray-100 text-gray-600 border-gray-200",
-                            "NATC (Not Active To Call)": "bg-orange-50 text-orange-700 border-orange-200",
+                            "NATC (Not able to connect)": "bg-orange-50 text-orange-700 border-orange-200",
                           };
                           const color = colorMap[s.status] || "bg-gray-100 text-gray-600 border-gray-200";
                           return (
@@ -236,6 +242,7 @@ export default function AdminDashboard() {
                   )}
                 </CardContent>
               </Card>
+              </Link>
             ))}
           </div>
 

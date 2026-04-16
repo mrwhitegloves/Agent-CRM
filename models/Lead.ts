@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import "./UploadBatch";
 import "./User"; // Ensure User model is registered for population
 
 export type LeadStatus =
@@ -8,7 +9,8 @@ export type LeadStatus =
   | "Interested"
   | "Follow-up"
   | "Converted"
-  | "Not Interested";
+  | "Not Interested"
+  | "NATC (Not able to connect)";
 
 export interface ILead extends Document {
   name: string;
@@ -21,6 +23,7 @@ export interface ILead extends Document {
   commissionAmount: number;
   timelineDays?: number;
   notes: string;
+  uploadBatchId?: Types.ObjectId;
   createdAt: Date;
   lastUpdated: Date;
 }
@@ -28,19 +31,20 @@ export interface ILead extends Document {
 const LeadSchema = new Schema<ILead>(
   {
     name: { type: String, required: true, trim: true },
-    phone: { type: String, required: true, trim: true },
+    phone: { type: String, required: true, trim: true, unique: true },
     city: { type: String, trim: true, default: "" },
     source: { type: String, trim: true, default: "" },
     assignedAgentId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     assignedAt: { type: Date, default: null },
     status: {
       type: String,
-      enum: ["New Lead", "Contacted", "DNP", "Interested", "Follow-up", "Converted", "Not Interested"],
+      enum: ["New Lead", "Contacted", "DNP", "Interested", "Follow-up", "Converted", "Not Interested", "NATC (Not able to connect)"],
       default: "New Lead",
     },
     commissionAmount: { type: Number, default: 0 },
     timelineDays: { type: Number, default: null },
     notes: { type: String, default: "" },
+    uploadBatchId: { type: Schema.Types.ObjectId, ref: "UploadBatch", default: null },
     lastUpdated: { type: Date, default: Date.now },
   },
   { timestamps: true }
